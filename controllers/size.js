@@ -1,0 +1,72 @@
+
+const e = require('express');
+const {db} = require('../db/connect');
+
+const createSize = async (req, res) => {
+    const {name, value} = req.body;
+    const sql = `INSERT INTO sizes (name, value) VALUES (?, ?)`;
+    db.query(sql, [name, value], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(201).json({message: 'Size created successfully'});
+    });
+}
+
+const getSizes = async (req, res) => {
+    const {page, pageSize} = req.query;
+    const sql = `SELECT * FROM sizes LIMIT ? OFFSET ?`;
+    db.query(sql, [+pageSize, (page - 1) * pageSize], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(200).json(result);
+    });
+}
+
+const updateSize = async (req, res) => {
+    const {id} = req.params;
+    const {name, value} = req.body;
+    // check if exists
+    let sql = 'SELECT * FROM sizes WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        if (!result.length) {
+            return res.status(404).json({message: 'Size not found'});
+        } else {
+            sql = `UPDATE sizes SET name = ?, value = ? WHERE id = ?`;
+            db.query(sql, [name, value, id], (err, result) => {
+                if (err) {
+                    throw err;
+                }
+                res.status(200).json({message: 'Size updated successfully'});
+            });
+        }
+    });
+    
+}
+
+const deleteSize = async (req, res) => {
+    const {id} = req.params;
+    // check if exists
+    let sql = 'SELECT * FROM sizes WHERE id = ?';
+    const result = db.query(sql, [id], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        if (!result.length) {
+            return res.status(404).json({message: 'Size not found'});
+        } else {
+            sql = `DELETE FROM product_sizes WHERE sizeId = ?`;
+            db.query(sql, [id], (err, result) => {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
+    });
+}
+
+module.exports = {createSize, getSizes, updateSize, deleteSize};
