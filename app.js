@@ -2,9 +2,11 @@ const express = require('express');
 const app = express();
 const {connectDB, createTable} = require('./db/connect');
 const sizeRouter = require('./routes/size');
+const colorRouter = require('./routes/color');
 
 app.use(express.json());
 app.use('/api/v1/sizes', sizeRouter);
+app.use('/api/v1/colors', colorRouter);
 
 
 const start = async () => {
