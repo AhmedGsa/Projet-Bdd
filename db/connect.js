@@ -1,10 +1,10 @@
 const mysql = require('mysql');
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'ahmed123',
-    database: 'store_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
 })
 
 const connectDB = () => {
@@ -19,8 +19,8 @@ const connectDB = () => {
 const createTable = () => {
     const sqlArr = [
         `CREATE TABLE IF NOT EXISTS colors (id int AUTO_INCREMENT, name VARCHAR(255), value VARCHAR(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id))`,
-        `CREATE TABLE IF NOT EXISTS categories (id int AUTO_INCREMENT, name VARCHAR(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id))`,
-        `CREATE TABLE IF NOT EXISTS products (id int AUTO_INCREMENT, name VARCHAR(255), price INT, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, categoryId INT, FOREIGN KEY (categoryId) REFERENCES categories(id), PRIMARY KEY (id))`,
+        // `CREATE TABLE IF NOT EXISTS categories (id int AUTO_INCREMENT, name VARCHAR(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id))`,
+        `CREATE TABLE IF NOT EXISTS products (id int AUTO_INCREMENT, name VARCHAR(255), price INT, imgUrl VARCHAR(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, category VARCHAR(255), PRIMARY KEY (id))`,
         `CREATE TABLE IF NOT EXISTS product_sizes (id int AUTO_INCREMENT, productId INT, sizeId INT, FOREIGN KEY (productId) REFERENCES products(id), FOREIGN KEY (sizeId) REFERENCES sizes(id), PRIMARY KEY (id))`,
         `CREATE TABLE IF NOT EXISTS product_colors (id int AUTO_INCREMENT, productId INT, colorId INT, FOREIGN KEY (productId) REFERENCES products(id), FOREIGN KEY (colorId) REFERENCES colors(id), PRIMARY KEY (id))`
     ];
