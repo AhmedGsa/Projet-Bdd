@@ -59,11 +59,12 @@ const deleteSize = async (req, res) => {
         if (!result.length) {
             return res.status(404).json({message: 'Size not found'});
         } else {
-            sql = `DELETE FROM product_sizes WHERE sizeId = ?`;
+            sql = `DELETE FROM sizes WHERE id = ?`;
             db.query(sql, [id], (err, result) => {
                 if (err) {
                     throw err;
                 }
+                res.status(200).json({message: 'Size deleted successfully'});
             });
         }
     });
