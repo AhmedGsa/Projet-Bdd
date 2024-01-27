@@ -73,6 +73,24 @@ const getProducts = async (req, res) => {
     });
 }
 
+const getGeneralInfo = async (req, res) => {
+    // get orders count
+    const ordersSql = `SELECT COUNT(*) AS ordersCount FROM orders`;
+    db.query(ordersSql, (err, ordersCount) => {
+        if (err) {
+            throw err;
+        }
+        // get products count
+        const productsSql = `SELECT COUNT(*) AS productsCount FROM products`;
+        db.query(productsSql, (err, productsCount) => {
+            if (err) {
+                throw err;
+            }
+            res.status(200).json({ordersCount: ordersCount[0].ordersCount, productsCount: productsCount[0].productsCount});
+        });
+    });
+}
+
 const updateProduct = async (req, res) => {
     const {id} = req.params;
     const {name, price, quantity, sizeIds, colorIds} = req.body;
@@ -192,5 +210,6 @@ module.exports = {
     getProducts,
     updateProduct,
     deleteProduct,
-    getAvailableProducts
+    getAvailableProducts,
+    getGeneralInfo
 }
