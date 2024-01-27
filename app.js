@@ -3,12 +3,14 @@ require('dotenv').config();
 require('express-async-errors');
 const app = express();
 const {connectDB, createTable} = require('./db/connect');
+const cors = require('cors');
 const sizeRouter = require('./routes/size');
 const colorRouter = require('./routes/color');
 const productRouter = require('./routes/product');
 const uploadsRouter = require('./routes/uploads');
 const errorHandler = require('./middlewares/error-handler');
 
+app.use(cors());
 app.use(express.json());
 app.use('/api/v1/sizes', sizeRouter);
 app.use('/api/v1/colors', colorRouter);

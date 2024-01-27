@@ -22,6 +22,16 @@ const getColors = async (req, res) => {
     });
 }
 
+const getAllColors = async (req, res) => {
+    const sql = `SELECT * FROM colors`;
+    db.query(sql, (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(200).json(result);
+    });
+}
+
 const updateColor = async (req, res) => {
     const {id} = req.params;
     const {name, value} = req.body;
@@ -68,4 +78,4 @@ const deleteColor = async (req, res) => {
     });
 }
 
-module.exports = {createColor, getColors, updateColor, deleteColor}
+module.exports = {createColor, getColors, updateColor, deleteColor, getAllColors}

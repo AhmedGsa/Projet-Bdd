@@ -24,6 +24,16 @@ const getSizes = async (req, res) => {
     });
 }
 
+const getAllSizes = async (req, res) => {
+    const sql = `SELECT * FROM sizes`;
+    db.query(sql, (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(200).json(result);
+    });
+}
+
 const updateSize = async (req, res) => {
     const {id} = req.params;
     const {name, value} = req.body;
@@ -70,4 +80,4 @@ const deleteSize = async (req, res) => {
     });
 }
 
-module.exports = {createSize, getSizes, updateSize, deleteSize};
+module.exports = {createSize, getSizes, updateSize, deleteSize, getAllSizes};

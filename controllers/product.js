@@ -2,8 +2,8 @@ const {db} = require("../db/connect");
 
 const createProduct = async (req, res) => {
     const image = req.file.filename;
-    const {name, price, category, sizeIds, colorIds} = req.body;
-    if(!name || !price || !category || !sizeIds || !colorIds) {
+    const {name, price, quantity, sizeIds, colorIds} = req.body;
+    if(!name || !price || !quantity || !sizeIds || !colorIds) {
         return res.status(400).json({message: 'All fields are required'});
     }
     const imgUrl = `http://localhost:${process.env.PORT}/uploads/${image}`;
@@ -26,8 +26,8 @@ const createProduct = async (req, res) => {
                 if (result.length !== colorIdsArr.length) {
                     res.status(404).json({message: 'Color not found'});
                 } else {
-                    const sql = `INSERT INTO products (name, price, imgUrl, category) VALUES (?, ?, ?, ?)`;
-                    db.query(sql, [name, +price, imgUrl, category], (err, result) => {
+                    const sql = `INSERT INTO products (name, price, imgUrl, quantity) VALUES (?, ?, ?, ?)`;
+                    db.query(sql, [name, +price, imgUrl, +quantity], (err, result) => {
                         if (err) {
                             throw err;
                         }
@@ -69,8 +69,8 @@ const getProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     const {id} = req.params;
-    const {name, price, category, sizeIds, colorIds} = req.body;
-    if(!name || !price || !category || !sizeIds || !colorIds) {
+    const {name, price, quantity, sizeIds, colorIds} = req.body;
+    if(!name || !price || !quantity || !sizeIds || !colorIds) {
         return res.status(400).json({message: 'All fields are required'});
     }
     const sizeIdsArr = JSON.parse(sizeIds);
@@ -84,43 +84,66 @@ const updateProduct = async (req, res) => {
         if (!result.length) {
             return res.status(404).json({message: 'Product not found'});
         } else {
-            let imgUrl = result[0].imgUrl;
-            if(req.file) {
-                const image = req.file.filename;
-                imgUrl = `http://localhost:${process.env.PORT}/uploads/${image}`;
-            }
-            sql = `UPDATE products SET name = ?, price = ?, imgUrl = ?, category = ? WHERE id = ?`;
-            db.query(sql, [name, +price, imgUrl, category, id], (err, result) => {
+            const colorSql = 'SELECT * FROM colors WHERE id IN (?)';
+            db.query(colorSql, [colorIdsArr], (err, result) => {
                 if (err) {
                     throw err;
                 }
-                const sizeSql = `DELETE FROM product_sizes WHERE productId = ?`;
-                db.query(sizeSql, [id], (err, result) => {
-                    if (err) {
-                        throw err;
-                    }
-                    const sizeSql = `INSERT INTO product_sizes (productId, sizeId) VALUES ?`;
-                    const sizeValues = sizeIdsArr.map(sizeId => [id, sizeId]);
-                    db.query(sizeSql, [sizeValues], (err, result) => {
+                if (result.length !== colorIdsArr.length) {
+                    res.status(404).json({message: 'Color not found'});
+                } else {
+                    const sizeSql = 'SELECT * FROM sizes WHERE id IN (?)';
+                    db.query(sizeSql, [sizeIdsArr], (err, result) => {
                         if (err) {
                             throw err;
                         }
-                        const colorSql = `DELETE FROM product_colors WHERE productId = ?`;
-                        db.query(colorSql, [id], (err, result) => {
-                            if (err) {
-                                throw err;
-                            }
-                            const colorSql = `INSERT INTO product_colors (productId, colorId) VALUES ?`;
-                            const colorValues = colorIdsArr.map(colorId => [id, colorId]);
-                            db.query(colorSql, [colorValues], (err, result) => {
+                        if (result.length !== sizeIdsArr.length) {
+                            res.status(404).json({message: 'Size not found'});
+                        } else {
+                            const sql = 'SELECT * FROM products WHERE id = ?';
+                            db.query(sql, [id], (err, result) => {
                                 if (err) {
                                     throw err;
                                 }
-                                res.status(200).json({message: 'Product updated successfully'});
+                                const image = req.file ? req.file.filename : result[0].imgUrl?.split('/')?.pop();
+                                const imgUrl = `http://localhost:${process.env.PORT}/uploads/${image}`;
+                                const sql = `UPDATE products SET name = ?, price = ?, imgUrl = ?, quantity = ? WHERE id = ?`;
+                                db.query(sql, [name, +price, imgUrl, +quantity, id], (err, result) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    const sizeSql = `DELETE FROM product_sizes WHERE productId = ?`;
+                                    db.query(sizeSql, [id], (err, result) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                        const sizeSql = `INSERT INTO product_sizes (productId, sizeId) VALUES ?`;
+                                        const sizeValues = sizeIdsArr.map(sizeId => [id, sizeId]);
+                                        db.query(sizeSql, [sizeValues], (err, result) => {
+                                            if (err) {
+                                                throw err;
+                                            }
+                                            const colorSql = `DELETE FROM product_colors WHERE productId = ?`;
+                                            db.query(colorSql, [id], (err, result) => {
+                                                if (err) {
+                                                    throw err;
+                                                }
+                                                const colorSql = `INSERT INTO product_colors (productId, colorId) VALUES ?`;
+                                                const colorValues = colorIdsArr.map(colorId => [id, colorId]);
+                                                db.query(colorSql, [colorValues], (err, result) => {
+                                                    if (err) {
+                                                        throw err;
+                                                    }
+                                                    res.status(200).json({message: 'Product updated successfully'});
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
                             });
-                        });
+                        }
                     });
-                });
+                }
             });
         }
     });
