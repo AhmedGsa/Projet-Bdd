@@ -20,7 +20,13 @@ const getSizes = async (req, res) => {
         if (err) {
             throw err;
         }
-        res.status(200).json(result);
+        const sql = `SELECT COUNT(*) AS count FROM sizes`;
+        db.query(sql, (err, count) => {
+            if (err) {
+                throw err;
+            }
+            res.status(200).json({sizes: result, count: count[0].count});
+        });
     });
 }
 
@@ -32,6 +38,18 @@ const getAllSizes = async (req, res) => {
         }
         res.status(200).json(result);
     });
+}
+
+const getProductSizes = async (req, res) => {
+    const {productId} = req.params;
+    const sql = `SELECT sizes.id, sizes.name, sizes.value FROM sizes INNER JOIN product_sizes ON sizes.id = product_sizes.sizeId WHERE product_sizes.productId = ?`;
+    db.query(sql, [productId], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(200).json(result);
+    });
+
 }
 
 const updateSize = async (req, res) => {
@@ -80,4 +98,4 @@ const deleteSize = async (req, res) => {
     });
 }
 
-module.exports = {createSize, getSizes, updateSize, deleteSize, getAllSizes};
+module.exports = {createSize, getSizes, updateSize, deleteSize, getAllSizes, getProductSizes};

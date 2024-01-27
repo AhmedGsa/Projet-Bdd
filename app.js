@@ -8,6 +8,7 @@ const sizeRouter = require('./routes/size');
 const colorRouter = require('./routes/color');
 const productRouter = require('./routes/product');
 const uploadsRouter = require('./routes/uploads');
+const ordersRouter = require('./routes/order');
 const errorHandler = require('./middlewares/error-handler');
 
 app.use(cors());
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/v1/sizes', sizeRouter);
 app.use('/api/v1/colors', colorRouter);
 app.use('/api/v1/products', productRouter);
+app.use('/api/v1/orders', ordersRouter);
 app.use('/uploads', uploadsRouter);
 app.use(errorHandler);
 

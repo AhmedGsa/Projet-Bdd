@@ -63,7 +63,13 @@ const getProducts = async (req, res) => {
         if (err) {
             throw err;
         }
-        res.status(200).json(result);
+        const sql = `SELECT COUNT(*) AS count FROM products`;
+        db.query(sql, (err, count) => {
+            if (err) {
+                throw err;
+            }
+            res.status(200).json({products: result, count: count[0].count});
+        });
     });
 }
 
@@ -171,9 +177,20 @@ const deleteProduct = async (req, res) => {
     });
 }
 
+const getAvailableProducts = async (req, res) => {
+    const sql = `SELECT * FROM products WHERE quantity > 0`;
+    db.query(sql, (err, result) => {
+        if (err) {
+            throw err;
+        }
+        res.status(200).json(result);
+    });
+}
+
 module.exports = {
     createProduct,
     getProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAvailableProducts
 }

@@ -18,6 +18,23 @@ const getColors = async (req, res) => {
         if (err) {
             throw err;
         }
+        const sql = `SELECT COUNT(*) AS count FROM colors`;
+        db.query(sql, (err, count) => {
+            if (err) {
+                throw err;
+            }
+            res.status(200).json({colors: result, count: count[0].count});
+        });
+    });
+}
+
+const getProductColors = async (req, res) => {
+    const {productId} = req.params;
+    const sql = `SELECT colors.id, colors.name, colors.value FROM colors INNER JOIN product_colors ON colors.id = product_colors.colorId WHERE product_colors.productId = ?`;
+    db.query(sql, [productId], (err, result) => {
+        if (err) {
+            throw err;
+        }
         res.status(200).json(result);
     });
 }
@@ -78,4 +95,4 @@ const deleteColor = async (req, res) => {
     });
 }
 
-module.exports = {createColor, getColors, updateColor, deleteColor, getAllColors}
+module.exports = {createColor, getColors, updateColor, deleteColor, getAllColors, getProductColors}
